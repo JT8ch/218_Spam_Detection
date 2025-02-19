@@ -1,0 +1,90 @@
+import pandas as pd
+import string
+import nltk
+import warnings
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+
+# Suppress warnings (to not pollute the output with unnecessary warnings)
+warnings.filterwarnings("ignore")
+
+# Remove the common words such as 'is', 'the', that doesn't help in classifying spam
+nltk.download('stopwords')
+
+# Sample dataset for later split training and testing for ai
+data = {
+    "label": ["spam", "ham", "ham", "spam", "spam", "ham", "ham", "spam", "ham", "spam"],
+    "message": [
+        "Congratulations! You won a free lottery. Click here to claim your prize.",
+        "Hey, are we still on for lunch tomorrow?",
+        "Don't forget our meeting at 3 PM.",
+        "URGENT! Your account has been compromised. Reset your password now.",
+        "Win a brand new car! Just send your details to enter.",
+        "Let's catch up soon. It's been a while!",
+        "Can you send me the notes from today's class?",
+        "Get a free iPhone by signing up for this exclusive offer!",
+        "Reminder: Your appointment is scheduled for tomorrow.",
+        "Exclusive offer just for you! Buy now and save 50%."
+    ]
+}
+
+df = pd.DataFrame(data)
+
+# Convert labels to binary (0 = ham, 1 = spam)
+df["label"] = df["label"].map({"ham": 0, "spam": 1})
+
+# Text preprocessing function to determine lowercase, uppercase, punctuation, etc (easier simpler recognition)
+def preprocess_text(text):
+    text = text.lower()  # Convert to lowercase
+    text = text.translate(str.maketrans("", "", string.punctuation))  # Remove punctuation
+    words = text.split()  # Tokenize
+    words = [word for word in words if word not in stopwords.words("english")]  # Remove stopwords
+    return " ".join(words)
+
+df["processed_message"] = df["message"].apply(preprocess_text)
+
+# Convert text to numerical format
+vectorizer = TfidfVectorizer()
+X = vectorizer.fit_transform(df["processed_message"])
+y = df["label"]
+
+# Split dataset
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train the model
+model = MultinomialNB()
+model.fit(X_train, y_train)
+
+# Predict on input message
+def predict_spam(text):
+    text = preprocess_text(text)  # Preprocess input
+    vectorized_text = vectorizer.transform([text])  # Convert to numerical format
+    prediction = model.predict(vectorized_text)[0]  # Predict spam (1) or ham (0)
+    return prediction  # Return the prediction as 0 (not spam) or 1 (spam)
+
+# Function to interactively take a new message and classify it
+def classify_new_message():
+    # Ask user for input message
+    new_message = input("\nEnter the message you want to classify: ")
+
+    # Get prediction (0 = Not Spam, 1 = Spam)
+    prediction = predict_spam(new_message)
+    
+    # Display the result
+    if prediction == 1:
+        print(f"Message: '{new_message}' ➡  Spam!")
+    else:
+        print(f"Message: '{new_message}' ➡  Not Spam!")
+
+# Display results
+print("\nSpam Detection Results:")
+
+# Ask the user if they want to input a new message for testing
+while True:
+    classify_new_message()
+    # Ask if they want to continue or exit
+    continue_test = input("\nWould you like to test another message? (yes/no): ").lower()
+    if continue_test != 'yes':
+        break
