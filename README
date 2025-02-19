@@ -1,0 +1,7 @@
+# Used Visual Studio, and Python programming language.
+#
+# Executing the program may take a moment, runs in terminal.
+#
+# Spam Detection works by using its dataset of training and testing to determine if the input is a spam.
+#
+# The Spam Detection should work by referencing to its dataset that it has learned to classify if the input is a spam.
