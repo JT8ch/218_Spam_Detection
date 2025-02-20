@@ -74,9 +74,9 @@ def classify_new_message():
     
     # Display the result
     if prediction == 1:
-        print(f"Message: '{new_message}' ➡  Spam!")
+        print(f"Message: '{new_message}' is a Spam!")
     else:
-        print(f"Message: '{new_message}' ➡  Not Spam!")
+        print(f"Message: '{new_message}' is Not Spam!")
 
 # Display results
 print("\nSpam Detection Results:")
